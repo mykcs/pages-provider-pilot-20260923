@@ -1,0 +1,1 @@
+function e(e){let t=null,n=()=>{let n=`${window.location.pathname}${window.location.search}`;if(t!==n){t=n;try{e()}catch(e){console.error(`[bindPageLifecycle] init failed:`,e)}}};document.addEventListener(`astro:page-load`,n),document.readyState===`loading`?document.addEventListener(`DOMContentLoaded`,n):n()}export{e as t};
