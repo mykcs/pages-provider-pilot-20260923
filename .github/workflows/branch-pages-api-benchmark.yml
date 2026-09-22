@@ -1,0 +1,41 @@
+name: Branch Pages API benchmark
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout control branch
+        uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+
+      - name: Update gh-pages with GITHUB_TOKEN
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          git fetch origin gh-pages
+          git worktree add /tmp/pages-benchmark origin/gh-pages
+          cd /tmp/pages-benchmark
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          printf 'actions-api-benchmark %s\n' "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > actions-api-benchmark.txt
+          git add actions-api-benchmark.txt
+          git commit -m "benchmark: GITHUB_TOKEN branch publish"
+          git push "https://x-access-token:${GH_TOKEN}@github.com/${GITHUB_REPOSITORY}.git" HEAD:gh-pages
+
+      - name: Request Pages build explicitly
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          gh api -X POST "repos/${GITHUB_REPOSITORY}/pages/builds"
